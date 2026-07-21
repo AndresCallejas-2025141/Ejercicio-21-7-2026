@@ -1,28 +1,63 @@
 import http, { IncomingMessage, ServerResponse } from "http";
+import { obtenerProductos, obtenerProductoPorId, agregarProducto, actualizarProducto, eliminarProducto } from "./controllers/productoController";
 
 export const server = http.createServer(
-  (req: IncomingMessage, res: ServerResponse) => {
+    (req: IncomingMessage, res: ServerResponse) => {
 
-    res.setHeader("Content-Type", "application/json");
+        if (req.url === "/productos" && req.method === "GET") {
+            obtenerProductos(res);
+            return;
+        }
 
-    if (req.url === "/" && req.method === "GET") {
-      res.writeHead(200);
+        if (req.method === "GET" && req.url?.startsWith("/productos/")) {
 
-      res.end(
-        JSON.stringify({
-          mensaje: "Servidor HTTP funcionando correctamente"
-        })
-      );
+        const partes = req.url.split("/");
 
-      return;
+        const id = Number(partes[2]);
+
+        obtenerProductoPorId(id, res);
+
+        return;
+        }
+
+        if (req.url === "/productos" && req.method === "POST") {
+
+        agregarProducto(req, res);
+
+        return;
+
+        }
+
+        if (req.method === "PUT" && req.url?.startsWith("/productos/")) {
+
+        const partes = req.url.split("/");
+
+        const id = Number(partes[2]);
+
+        actualizarProducto(req, res, id);
+
+        return;
+
+        }
+
+        if (req.method === "DELETE" && req.url?.startsWith("/productos/")) {
+
+        const partes = req.url.split("/");
+
+        const id = Number(partes[2]);
+
+        eliminarProducto(id, res);
+
+        return;
+
+        }
+
+        res.writeHead(404, {
+            "Content-Type": "application/json"
+        });
+
+        res.end(JSON.stringify({
+            mensaje: "Ruta no encontrada"
+        }));
     }
-
-    res.writeHead(404);
-
-    res.end(
-      JSON.stringify({
-        error: "Ruta no encontrada"
-      })
-    );
-  }
 );
